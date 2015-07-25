@@ -12,7 +12,7 @@ import array
 
 #yeah, everything is pretty much hadrcoded, but this is
 #supposed to be a quick check 
-inputFile = io.root_open('flat_trees/CombinedSV_ALL.root')
+inputFile = io.root_open('trees/CombinedSV_ALL.root')
 flat_tree = inputFile.tree
 tested_discriminators = [
    'CvsL', 
@@ -28,6 +28,8 @@ for name in tested_discriminators:
    plots[name]['output_C'] = Hist(400, -2, 2)
    plots[name]['output_L'] = Hist(400, -2, 2)
    plots[name]['output_B'] = Hist(400, -2, 2)
+   plots[name]['pt'] = Hist(200, 0, 1000)
+   plots[name]['eta'] = Hist(300, -3, 3)
 
 
 class FunctorFromMVA(object):
@@ -69,6 +71,8 @@ for entry in flat_tree:
       bmva = evaluator(entry)
       plots[short]['output'].fill(bmva)
       flav = abs(entry.flavour)
+      plots[short]['pt'].fill(entry.jetPt)
+      plots[short]['eta'].fill(entry.jetEta)
       if flav == 4:
          plots[short]['output_C'].fill(bmva)
       elif flav == 5:
@@ -77,8 +81,12 @@ for entry in flat_tree:
          plots[short]['output_L'].fill(bmva)
 
 
-with io.root_open('flat_tree_output.root', 'recreate') as out:
+if not os.path.isdir('analyzed'):
+   os.makedirs('analyzed')
+
+with io.root_open('analyzed/flat_tree_output.root', 'recreate') as out:
    for dname, dplots in plots.iteritems():
       tdir = out.mkdir(dname)
       for name, plot in dplots.iteritems():
+         print 'saving %s' % name
          tdir.WriteTObject(plot, name)

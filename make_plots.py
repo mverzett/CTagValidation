@@ -28,11 +28,9 @@ discrims = [
    'CvsB',   
 ]
 
-pat_input = io.root_open('validation_output.root')
-flat_input = io.root_open('flat_tree_output.root')
 inputs = {
-   'pat' : pat_input,
-   'flat_tree' : flat_input
+   'pat' : io.root_open('analyzed/pat_validation_output.root'),
+   'flat_tree' : io.root_open('analyzed/flat_tree_output.root'),
    }
 
 flavors = ['c', 'b', 'l', 'sum']
@@ -135,52 +133,99 @@ for prefix, infile in inputs.iteritems():
 if not os.path.isdir('plots/comparison'):
    os.makedirs('plots/comparison')
 
-for flavor in flavors:
-   for name in discrims:
-      canvas = plotting.Canvas(600, 800)
-      pad1 = plotting.Pad(0,0.33,1,1)
-      pad1.Draw()
-      pad1.cd()
+inputs = {
+   'pat' : views.StyleView(
+      inputs['pat'], 
+      fillstyle = 'hollow',
+      linewidth = 2,
+      markerstyle= 0,
+      drawstyle='hist',
+      legendstyle='l'
+      ),
+   'flat_tree' : views.StyleView(
+      inputs['flat_tree'], 
+      fillstyle = 'hollow',
+      linewidth = 2,
+      markerstyle= 0,
+      drawstyle='hist',
+      legendstyle='l'
+      )
+   }
 
-      legend = plotting.Legend(2, rightmargin=0.07, topmargin=0.05, leftmargin=0.45)
-      legend.SetHeader('%s, %s jets' % (name, flavor))
-      legend.SetBorderSize(0)
-      #print  flavor, name
-      #set_trace()
-      pat = disc_shapes['pat'][flavor][name]
-      flat = disc_shapes['flat_tree'][flavor][name]
+to_compare = [
+   {'rbin' : 4, 'png' : 'CvsL_MVA_B', 'path' : 'CvsL/output_B', 'norm' : False, 'title' : 'CvsL, B jets',     'xtitle' : 'MVA output'},
+   {'rbin' : 4, 'png' : 'CvsL_MVA_C', 'path' : 'CvsL/output_C', 'norm' : False, 'title' : 'CvsL, charm jets', 'xtitle' : 'MVA output'},
+   {'rbin' : 4, 'png' : 'CvsL_MVA_L', 'path' : 'CvsL/output_L', 'norm' : False, 'title' : 'CvsL, light jets', 'xtitle' : 'MVA output'},
+   {'rbin' : 4, 'png' : 'CvsL_MVA'  , 'path' : 'CvsL/output'  , 'norm' : False, 'title' : 'CvsL, all jets',  'xtitle' : 'MVA output'},
+   {'rbin' : 4, 'png' : 'CvsB_MVA_B', 'path' : 'CvsB/output_B', 'norm' : False, 'title' : 'CvsB, B jets',     'xtitle' : 'MVA output'},
+   {'rbin' : 4, 'png' : 'CvsB_MVA_C', 'path' : 'CvsB/output_C', 'norm' : False, 'title' : 'CvsB, charm jets', 'xtitle' : 'MVA output'},
+   {'rbin' : 4, 'png' : 'CvsB_MVA_L', 'path' : 'CvsB/output_L', 'norm' : False, 'title' : 'CvsB, light jets', 'xtitle' : 'MVA output'},
+   {'rbin' : 4, 'png' : 'CvsB_MVA'  , 'path' : 'CvsB/output'  , 'norm' : False, 'title' : 'CvsB, all jets',  'xtitle' : 'MVA output'},
+   {'rbin' : 4, 'png' : 'jet_pt'    , 'path' : 'CvsL/pt'      , 'norm' : False, 'title' : 'jet p_{T}',       'xtitle' : 'jet p_{T}'},
+   {'rbin' : 4, 'png' : 'jet_eta'   , 'path' : 'CvsL/eta'     , 'norm' : False, 'title' : 'jet #eta',        'xtitle' : 'jet #eta'},
+]
 
-      pat.title = 'from PAT'
-      flat.title = 'from flat tree'
-      
-      pat.linecolor = colors[0]
-      flat.linecolor = colors[1]
-      
-      legend.AddEntry(pat)
-      legend.AddEntry(flat)
-      
-      pat.Draw()
-      flat.Draw('same')
-      legend.Draw()
+for info in to_compare:
+   canvas = plotting.Canvas(600, 800)
+   pad1 = plotting.Pad(0,0.33,1,1)
+   pad1.Draw()
+   pad1.cd()
 
-      canvas.cd()
-      pad2 = plotting.Pad(0,0,1,0.33)
-      pad2.Draw()
-      pad2.cd()
-      
-      ratio = pat.Clone()
-      ratio.Divide(flat)
-      ratio.drawstyle = 'p'
-      ratio.linecolor = 'black'      
-      ratio.yaxis.title = 'ratio (PAT/tree)'
-      ratio.Draw()
+   legend = plotting.Legend(2, rightmargin=0.07, topmargin=0.05, leftmargin=0.45)
+   legend.SetHeader(info['title'])
+   legend.SetBorderSize(0)
+   #print  flavor, name
+   #set_trace()
 
-      one = plotting.F1('1', *ratio.xaxis.range_user)
-      one.Draw('same')
-      one.linecolor = colors[0]
-      
-      canvas.SaveAs('plots/comparison/%s_%s.png' % (flavor, name))
-      canvas.SaveAs('plots/comparison/%s_%s.pdf' % (flavor, name))
+   pat  = inputs['pat'].Get(info['path'])
+   flat = inputs['flat_tree'].Get(info['path'])
+
+   pat.Rebin(info['rbin']) 
+   flat.Rebin(info['rbin']) 
+
+   pat.title = 'from PAT'
+   flat.title = 'from flat tree'
+   
+   pat.linecolor = colors[0]
+   flat.linecolor = colors[1]
+
+   pat.xaxis.title = info['xtitle']
+   flat.xaxis.title = info['xtitle']
+   
+   if info['norm']: 
+      pat.yaxis.title =  'Entries (normalized)'
+      flat.yaxis.title = 'Entries (normalized)'
+      pat.Scale(1./pat.Integral())
+      flat.Scale(1./flat.Integral())
+   else:
+      pat.yaxis.title =  'Entries'
+      flat.yaxis.title = 'Entries'
+
+   legend.AddEntry(pat)
+   legend.AddEntry(flat)
+   
+   pat.Draw()
+   flat.Draw('same')
+   legend.Draw()
+
+   canvas.cd()
+   pad2 = plotting.Pad(0,0,1,0.33)
+   pad2.Draw()
+   pad2.cd()
+   
+   ratio = pat.Clone()
+   ratio.Divide(flat)
+   ratio.drawstyle = 'p'
+   ratio.linecolor = 'black'      
+   ratio.yaxis.title = 'ratio (PAT/tree)'
+   ratio.Draw()
+
+   one = plotting.F1('1', *ratio.xaxis.range_user)
+   one.Draw('same')
+   one.linecolor = colors[0]
+   
+   canvas.SaveAs('plots/comparison/%s.png' % info['png'])
+   canvas.SaveAs('plots/comparison/%s.pdf' % info['png'])
 
 ##    to_keep = []
 ##    first = True

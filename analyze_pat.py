@@ -9,7 +9,7 @@ from pdb import set_trace
 
 #yeah, everything is pretty much hadrcoded, but this is
 #supposed to be a quick check 
-events = Events('validate_ctag_pat.root')
+events = Events('trees/validate_ctag_pat.root')
 tested_discriminators = {
    'pfCombinedCvsLJetTags' : 'CvsL', 
    'pfCombinedCvsBJetTags' : 'CvsB'
@@ -24,6 +24,9 @@ for name in tested_discriminators.values():
    plots[name]['output_C'] = Hist(400, -2, 2)
    plots[name]['output_L'] = Hist(400, -2, 2)
    plots[name]['output_B'] = Hist(400, -2, 2)
+   plots[name]['pt'] = Hist(200, 0, 1000)
+   plots[name]['eta'] = Hist(300, -3, 3)
+
 handle = Handle('std::vector<pat::Jet>')
 vtx_handle = Handle('vector<reco::Vertex>')
 
@@ -44,6 +47,8 @@ for evt in events:
       for full, short in tested_discriminators.iteritems():
          bmva = jet.bDiscriminator(full)
          plots[short]['output'].fill(bmva)
+         plots[short]['pt'].fill(jet.pt())
+         plots[short]['eta'].fill(jet.eta())
          flav = abs(jet.jetFlavourInfo().getPartonFlavour())
          if flav == 4:
             plots[short]['output_C'].fill(bmva)
@@ -52,8 +57,10 @@ for evt in events:
          else:
             plots[short]['output_L'].fill(bmva)
 
+if not os.path.isdir('analyzed'):
+   os.makedirs('analyzed')
 
-with io.root_open('validation_output.root', 'recreate') as out:
+with io.root_open('analyzed/pat_validation_output.root', 'recreate') as out:
    for dname, dplots in plots.iteritems():
       tdir = out.mkdir(dname)
       for name, plot in dplots.iteritems():

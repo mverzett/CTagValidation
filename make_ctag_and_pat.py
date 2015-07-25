@@ -1,5 +1,8 @@
 from PhysicsTools.PatAlgos.patTemplate_cfg import *
+import os
 ## switch to uncheduled mode
+if not os.path.isdir('trees'):
+   os.path.makedirs('trees')
 
 process.options.allowUnscheduled = cms.untracked.bool(True)
 #process.Tracer = cms.Service("Tracer")
@@ -14,8 +17,8 @@ process.load('RecoBTag/Configuration/RecoBTag_cff')
 ## process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc')
 
 ## Events to process
-process.maxEvents.input = 1#000
-process.out.fileName = 'validate_ctag_pat_1ev.root'
+process.maxEvents.input = 1000
+process.out.fileName = 'trees/validate_ctag_pat_1ev.root'
 
 
 ## Input files
