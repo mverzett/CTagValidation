@@ -1,0 +1,9 @@
+*~
+\#*\#
+external/vpython
+plots
+flat_trees
+training_trees
+*.root
+*.pdf
+*.png
