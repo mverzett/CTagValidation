@@ -29,6 +29,7 @@ for name in tested_discriminators:
    plots[name]['output_L'] = Hist(400, -2, 2)
    plots[name]['output_B'] = Hist(400, -2, 2)
    plots[name]['pt'] = Hist(200, 0, 1000)
+   plots[name]['pt_zoom'] = Hist(10, 0, 50)
    plots[name]['eta'] = Hist(300, -3, 3)
 
 
@@ -72,6 +73,7 @@ for entry in flat_tree:
       plots[short]['output'].fill(bmva)
       flav = abs(entry.flavour)
       plots[short]['pt'].fill(entry.jetPt)
+      plots[short]['pt_zoom'].fill(entry.jetPt)
       plots[short]['eta'].fill(entry.jetEta)
       if flav == 4:
          plots[short]['output_C'].fill(bmva)

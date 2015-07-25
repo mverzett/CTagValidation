@@ -163,6 +163,7 @@ to_compare = [
    {'rbin' : 4, 'png' : 'CvsB_MVA'  , 'path' : 'CvsB/output'  , 'norm' : False, 'title' : 'CvsB, all jets',  'xtitle' : 'MVA output'},
    {'rbin' : 4, 'png' : 'jet_pt'    , 'path' : 'CvsL/pt'      , 'norm' : False, 'title' : 'jet p_{T}',       'xtitle' : 'jet p_{T}'},
    {'rbin' : 4, 'png' : 'jet_eta'   , 'path' : 'CvsL/eta'     , 'norm' : False, 'title' : 'jet #eta',        'xtitle' : 'jet #eta'},
+   {'rbin' : 1, 'png' : 'jet_pt_zoom', 'path' : 'CvsL/pt_zoom', 'norm' : False, 'title' : 'jet p_{T}', 'xtitle' : 'jet p_{T}'},
 ]
 
 for info in to_compare:

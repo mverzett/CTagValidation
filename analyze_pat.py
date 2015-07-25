@@ -6,6 +6,7 @@ from rootpy.plotting import Hist #yes, needs rootpy, it is MUCH better
 import rootpy.io as io
 ROOT.gROOT.SetBatch()
 from pdb import set_trace
+import os
 
 #yeah, everything is pretty much hadrcoded, but this is
 #supposed to be a quick check 
@@ -25,6 +26,7 @@ for name in tested_discriminators.values():
    plots[name]['output_L'] = Hist(400, -2, 2)
    plots[name]['output_B'] = Hist(400, -2, 2)
    plots[name]['pt'] = Hist(200, 0, 1000)
+   plots[name]['pt_zoom'] = Hist(10, 0, 50)
    plots[name]['eta'] = Hist(300, -3, 3)
 
 handle = Handle('std::vector<pat::Jet>')
@@ -48,6 +50,7 @@ for evt in events:
          bmva = jet.bDiscriminator(full)
          plots[short]['output'].fill(bmva)
          plots[short]['pt'].fill(jet.pt())
+         plots[short]['pt_zoom'].fill(jet.pt())
          plots[short]['eta'].fill(jet.eta())
          flav = abs(jet.jetFlavourInfo().getPartonFlavour())
          if flav == 4:
