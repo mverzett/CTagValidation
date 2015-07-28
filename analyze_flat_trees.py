@@ -19,18 +19,26 @@ tested_discriminators = [
    'CvsB'
 ]
 
+if not os.path.isdir('analyzed'):
+   os.makedirs('analyzed')
+
+out_file = io.root_open('analyzed/flat_tree_output.root', 'recreate')
+
 #book plots
 plots = {}
+out_file.cd()
+plots['pt']  = Hist(200, 0, 1000, name='pt')
+plots['pt_zoom'] = Hist(10, 0, 50, name='pt_zoom')
+plots['eta'] = Hist(300, -3, 3, name='eta')
 for name in tested_discriminators:
+   tdir = out_file.mkdir(name)
+   tdir.cd()
    plots[name] = {}
    #discriminator output
-   plots[name]['output']   = Hist(400, -2, 2)
-   plots[name]['output_C'] = Hist(400, -2, 2)
-   plots[name]['output_L'] = Hist(400, -2, 2)
-   plots[name]['output_B'] = Hist(400, -2, 2)
-   plots[name]['pt'] = Hist(200, 0, 1000)
-   plots[name]['pt_zoom'] = Hist(10, 0, 50)
-   plots[name]['eta'] = Hist(300, -3, 3)
+   plots[name]['output'  ] = Hist(400, -2, 2, name='output'  )
+   plots[name]['output_C'] = Hist(400, -2, 2, name='output_C')
+   plots[name]['output_L'] = Hist(400, -2, 2, name='output_L')
+   plots[name]['output_B'] = Hist(400, -2, 2, name='output_B')
 
 
 class FunctorFromMVA(object):
@@ -66,15 +74,22 @@ mva = {
    'CvsL' : FunctorFromMVA('c_vs_l', '%s/src/RecoBTag/CTagging/data/c_vs_udsg.weight.xml' % os.environ['CMSSW_BASE']),
    'CvsB' : FunctorFromMVA('c_vs_b', '%s/src/RecoBTag/CTagging/data/c_vs_b.weight.xml' % os.environ['CMSSW_BASE'])
 }
+njets = {}
 
 for entry in flat_tree:
+   evtid = (entry.run, entry.lumi, entry.evt)
+## if evtid in njets:
+##    njets[evtid] += 1
+## else:
+##    njets[evtid] = 1
+
+   plots['pt'].fill(entry.jetPt)
+   plots['pt_zoom'].fill(entry.jetPt)
+   plots['eta'].fill(entry.jetEta)
    for short, evaluator in mva.iteritems():
       bmva = evaluator(entry)
       plots[short]['output'].fill(bmva)
       flav = abs(entry.flavour)
-      plots[short]['pt'].fill(entry.jetPt)
-      plots[short]['pt_zoom'].fill(entry.jetPt)
-      plots[short]['eta'].fill(entry.jetEta)
       if flav == 4:
          plots[short]['output_C'].fill(bmva)
       elif flav == 5:
@@ -82,13 +97,6 @@ for entry in flat_tree:
       else:
          plots[short]['output_L'].fill(bmva)
 
-
-if not os.path.isdir('analyzed'):
-   os.makedirs('analyzed')
-
-with io.root_open('analyzed/flat_tree_output.root', 'recreate') as out:
-   for dname, dplots in plots.iteritems():
-      tdir = out.mkdir(dname)
-      for name, plot in dplots.iteritems():
-         print 'saving %s' % name
-         tdir.WriteTObject(plot, name)
+out_file.Write()
+inputFile.Close()
+out_file.Close()
