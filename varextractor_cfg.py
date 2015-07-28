@@ -83,7 +83,7 @@ process.jetFlavourInfosAK4PFJets = ak4JetFlavourInfos.clone()
 process.jetFlavourInfosAK4PFJets.jets = cms.InputTag("ak4PFJetsCHS")
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(1)#000)
+    input = cms.untracked.int32(1000)
 )
 
 
