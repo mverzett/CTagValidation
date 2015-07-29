@@ -153,17 +153,18 @@ inputs = {
    }
 
 to_compare = [
-   {'rbin' : 4, 'png' : 'CvsL_MVA_B', 'path' : 'CvsL/output_B', 'norm' : False, 'title' : 'CvsL, B jets',     'xtitle' : 'MVA output'},
-   {'rbin' : 4, 'png' : 'CvsL_MVA_C', 'path' : 'CvsL/output_C', 'norm' : False, 'title' : 'CvsL, charm jets', 'xtitle' : 'MVA output'},
-   {'rbin' : 4, 'png' : 'CvsL_MVA_L', 'path' : 'CvsL/output_L', 'norm' : False, 'title' : 'CvsL, light jets', 'xtitle' : 'MVA output'},
-   {'rbin' : 4, 'png' : 'CvsL_MVA'  , 'path' : 'CvsL/output'  , 'norm' : False, 'title' : 'CvsL, all jets',  'xtitle' : 'MVA output'},
-   {'rbin' : 4, 'png' : 'CvsB_MVA_B', 'path' : 'CvsB/output_B', 'norm' : False, 'title' : 'CvsB, B jets',     'xtitle' : 'MVA output'},
-   {'rbin' : 4, 'png' : 'CvsB_MVA_C', 'path' : 'CvsB/output_C', 'norm' : False, 'title' : 'CvsB, charm jets', 'xtitle' : 'MVA output'},
-   {'rbin' : 4, 'png' : 'CvsB_MVA_L', 'path' : 'CvsB/output_L', 'norm' : False, 'title' : 'CvsB, light jets', 'xtitle' : 'MVA output'},
-   {'rbin' : 4, 'png' : 'CvsB_MVA'  , 'path' : 'CvsB/output'  , 'norm' : False, 'title' : 'CvsB, all jets',  'xtitle' : 'MVA output'},
-   {'rbin' : 4, 'png' : 'jet_pt'    , 'path' : 'CvsL/pt'      , 'norm' : False, 'title' : 'jet p_{T}',       'xtitle' : 'jet p_{T}'},
-   {'rbin' : 4, 'png' : 'jet_eta'   , 'path' : 'CvsL/eta'     , 'norm' : False, 'title' : 'jet #eta',        'xtitle' : 'jet #eta'},
-   {'rbin' : 1, 'png' : 'jet_pt_zoom', 'path' : 'CvsL/pt_zoom', 'norm' : False, 'title' : 'jet p_{T}', 'xtitle' : 'jet p_{T}'},
+   {'rbin' : 8, 'png' : 'CvsL_MVA_B', 'path' : 'CvsL/output_B', 'norm' : False, 'title' : 'CvsL, B jets',     'xtitle' : 'MVA output'},
+   {'rbin' : 8, 'png' : 'CvsL_MVA_C', 'path' : 'CvsL/output_C', 'norm' : False, 'title' : 'CvsL, charm jets', 'xtitle' : 'MVA output'},
+   {'rbin' : 8, 'png' : 'CvsL_MVA_L', 'path' : 'CvsL/output_L', 'norm' : False, 'title' : 'CvsL, light jets', 'xtitle' : 'MVA output'},
+   {'rbin' : 8, 'png' : 'CvsL_MVA'  , 'path' : 'CvsL/output'  , 'norm' : False, 'title' : 'CvsL, all jets',  'xtitle' : 'MVA output'},
+   {'rbin' : 8, 'png' : 'CvsB_MVA_B', 'path' : 'CvsB/output_B', 'norm' : False, 'title' : 'CvsB, B jets',     'xtitle' : 'MVA output'},
+   {'rbin' : 8, 'png' : 'CvsB_MVA_C', 'path' : 'CvsB/output_C', 'norm' : False, 'title' : 'CvsB, charm jets', 'xtitle' : 'MVA output'},
+   {'rbin' : 8, 'png' : 'CvsB_MVA_L', 'path' : 'CvsB/output_L', 'norm' : False, 'title' : 'CvsB, light jets', 'xtitle' : 'MVA output'},
+   {'rbin' : 8, 'png' : 'CvsB_MVA'  , 'path' : 'CvsB/output'  , 'norm' : False, 'title' : 'CvsB, all jets',  'xtitle' : 'MVA output'},
+   {'rbin' : 4, 'png' : 'jet_pt'    , 'path' : 'pt'      , 'norm' : False, 'title' : 'jet p_{T}',       'xtitle' : 'jet p_{T}'},
+   {'rbin' : 4, 'png' : 'jet_eta'   , 'path' : 'eta'     , 'norm' : False, 'title' : 'jet #eta',        'xtitle' : 'jet #eta'},
+   {'rbin' : 1, 'png' : 'jet_pt_zoom', 'path': 'pt_zoom', 'norm' : False, 'title' : 'jet p_{T}', 'xtitle' : 'jet p_{T}'},
+   {'rbin' : 1, 'png' : 'njets'     , 'path' : 'njets'  , 'norm' : False, 'title' : '# jets', 'xtitle' : '# jets'},
 ]
 
 for info in to_compare:
@@ -202,6 +203,18 @@ for info in to_compare:
       pat.yaxis.title =  'Entries'
       flat.yaxis.title = 'Entries'
 
+   #set range
+   ymax = max(
+      max(i.value for i in pat),
+      max(i.value for i in flat)
+      )
+   ymin = min(
+      0.,
+      min(i.value for i in pat),
+      min(i.value for i in flat)
+      )
+   pat.yaxis.range_user = (ymin, ymax*1.2)
+
    legend.AddEntry(pat)
    legend.AddEntry(flat)
    
@@ -213,12 +226,13 @@ for info in to_compare:
    pad2 = plotting.Pad(0,0,1,0.33)
    pad2.Draw()
    pad2.cd()
-   
+
    ratio = pat.Clone()
    ratio.Divide(flat)
    ratio.drawstyle = 'p'
    ratio.linecolor = 'black'      
    ratio.yaxis.title = 'ratio (PAT/tree)'
+   ratio.yaxis.range_user = (0, 2)
    ratio.Draw()
 
    one = plotting.F1('1', *ratio.xaxis.range_user)
