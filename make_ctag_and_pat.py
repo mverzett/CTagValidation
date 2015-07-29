@@ -18,9 +18,9 @@ process.load('RecoBTag/Configuration/RecoBTag_cff')
 
 ## Events to process
 process.maxEvents.input = 1000
-process.out.fileName = 'trees/validate_ctag_pat_1ev.root'
+process.out.fileName = 'trees/validate_ctag_pat.root'
 
-
+process.patJetCorrFactors.levels = []
 ## Input files
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
