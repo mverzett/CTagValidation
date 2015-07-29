@@ -9,7 +9,8 @@ import os
 ROOT.gROOT.SetBatch()
 from pdb import set_trace
 import array
-
+from helpers import dict2tdir
+import pickle
 #yeah, everything is pretty much hadrcoded, but this is
 #supposed to be a quick check 
 inputFile = io.root_open('trees/CombinedSV_ALL.root')
@@ -22,24 +23,8 @@ tested_discriminators = [
 if not os.path.isdir('analyzed'):
    os.makedirs('analyzed')
 
-out_file = io.root_open('analyzed/flat_tree_output.root', 'recreate')
-
 #book plots
-plots = {}
-out_file.cd()
-plots['pt']  = Hist(200, 0, 1000, name='pt')
-plots['pt_zoom'] = Hist(10, 0, 50, name='pt_zoom')
-plots['eta'] = Hist(300, -3, 3, name='eta')
-for name in tested_discriminators:
-   tdir = out_file.mkdir(name)
-   tdir.cd()
-   plots[name] = {}
-   #discriminator output
-   plots[name]['output'  ] = Hist(400, -2, 2, name='output'  )
-   plots[name]['output_C'] = Hist(400, -2, 2, name='output_C')
-   plots[name]['output_L'] = Hist(400, -2, 2, name='output_L')
-   plots[name]['output_B'] = Hist(400, -2, 2, name='output_B')
-
+from plots import plots
 
 class FunctorFromMVA(object):
     def __init__(self, name, xml_filename, **kwargs):
@@ -75,14 +60,19 @@ mva = {
    'CvsB' : FunctorFromMVA('c_vs_b', '%s/src/RecoBTag/CTagging/data/c_vs_b.weight.xml' % os.environ['CMSSW_BASE'])
 }
 njets = {}
+jets_map = {}
 
 for entry in flat_tree:
    evtid = (entry.run, entry.lumi, entry.evt)
-## if evtid in njets:
-##    njets[evtid] += 1
-## else:
-##    njets[evtid] = 1
+   if evtid in njets:
+      njets[evtid] += 1
+   else:
+      njets[evtid] = 1
 
+   if evtid not in jets_map: jets_map[evtid] = set()      
+   jets_map[evtid].add(
+      (entry.jetPt, entry.jetEta)
+      )
    plots['pt'].fill(entry.jetPt)
    plots['pt_zoom'].fill(entry.jetPt)
    plots['eta'].fill(entry.jetEta)
@@ -97,6 +87,17 @@ for entry in flat_tree:
       else:
          plots[short]['output_L'].fill(bmva)
 
-out_file.Write()
+for j, i in njets.iteritems():
+   if i > 20:
+      print j, i
+   plots['njets'].fill(i)
+
+print len(njets)
+with io.root_open('analyzed/flat_tree_output.root', 'recreate') as out:
+   dict2tdir(plots, out)
+
+print len(jets_map)
+with open('analyzed/flat_jet_map', 'wb') as db:
+   pickle.dump(jets_map, db)
+
 inputFile.Close()
-out_file.Close()
