@@ -16,6 +16,10 @@ process.load("Configuration.Geometry.GeometryIdeal_cff") #new one
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 process.load("Configuration.StandardSequences.Reconstruction_cff")
 
+process.options   = cms.untracked.PSet(
+    wantSummary = cms.untracked.bool(True)
+)
+
 #process.GlobalTag.globaltag = cms.string("POSTLS170_V6::All")
 process.GlobalTag.globaltag = cms.string("MCRUN2_75_V5")
 
@@ -48,22 +52,32 @@ process.goodOfflinePrimaryVertices = cms.EDFilter(
 
 #input for softLeptonTagInfos
 from RecoBTag.SoftLepton.softPFElectronTagInfos_cfi import *
-process.softPFElectronsTagInfos.primaryVertex = cms.InputTag('goodOfflinePrimaryVertices')
+process.softPFElectronsTagInfos.primaryVertex = 'offlinePrimaryVertices' #cms.InputTag('goodOfflinePrimaryVertices')
 process.softPFElectronsTagInfos.jets = cms.InputTag("ak4PFJetsCHS")
 process.softPFElectronsTagInfos.useMCpromptElectronFilter = cms.bool(True)
 from RecoBTag.SoftLepton.softPFMuonTagInfos_cfi import *
-process.softPFMuonsTagInfos.primaryVertex = cms.InputTag('goodOfflinePrimaryVertices')
+process.softPFMuonsTagInfos.primaryVertex = 'offlinePrimaryVertices' #cms.InputTag('goodOfflinePrimaryVertices')
 process.softPFMuonsTagInfos.jets = cms.InputTag("ak4PFJetsCHS")
 process.softPFMuonsTagInfos.useMCpromptMuonFilter = cms.bool(True)
 
 #process.combinedSecondaryVertexSoftLepton.trackMultiplicityMin = cms.uint32(2)
 
+#load custom tag info
+#from RecoVertex.AdaptiveVertexFinder.inclusiveVertexing_cff import inclusiveCandidateVertexingCvsL
+#process.inclusiveCandidateVertexingCvsL = inclusiveCandidateVertexingCvsL
+#from RecoBTag.CTagging.pfInclusiveSecondaryVertexFinderCvsLTagInfos_cfi import pfInclusiveSecondaryVertexFinderCvsLTagInfos
+#process.pfInclusiveSecondaryVertexFinderCvsLTagInfos = pfInclusiveSecondaryVertexFinderCvsLTagInfos
+#process.customTagInfos = cms.Sequence(
+#    ( process.inclusiveCandidateVertexingCvsL *
+#      process.pfInclusiveSecondaryVertexFinderCvsLTagInfos
+#    )
+#)
 
 #for Inclusive Vertex Finder
 process.load('RecoVertex/AdaptiveVertexFinder/inclusiveVertexing_cff')
 process.load('RecoBTag/SecondaryVertex/inclusiveSecondaryVertexFinderTagInfos_cfi')
-process.inclusiveVertexFinder.primaryVertices = cms.InputTag("goodOfflinePrimaryVertices")
-process.trackVertexArbitrator.primaryVertices = cms.InputTag("goodOfflinePrimaryVertices")
+process.inclusiveVertexFinder.primaryVertices = 'offlinePrimaryVertices' #cms.InputTag("goodOfflinePrimaryVertices")
+process.trackVertexArbitrator.primaryVertices = 'offlinePrimaryVertices' #cms.InputTag("goodOfflinePrimaryVertices")
 
 # cut on decay length
 process.inclusiveVertexFinder.vertexMinDLen2DSig = cms.double(1.25) #2.5 sigma for b tagger, default for C tagger was put on 0. However, lifetime D mesons on average about half of lifetime of B meson -> half of significance
@@ -72,6 +86,13 @@ process.inclusiveVertexFinder.vertexMinDLenSig = cms.double(0.25) #0.5 sigma for
 #process.inclusiveVertexFinder.clusterizer.seedMin3DIPValue = cms.double(0.005) # default 0.005
 #process.inclusiveVertexFinder.clusterScale = cms.double(0.5) # default 1. #I think it should be distanceRatio(10) now
 process.inclusiveSecondaryVertexFinderTagInfos.vertexCuts.distSig2dMin = 1.5 # default value 3.0 to release cuts on flight dist, default for C tagger was put on 0. However, lifetime D mesons on average about half of lifetime of B meson -> half of distance
+
+#Mauro's changes to perform like inclusiveCandidateVertexFinderCvsL
+process.inclusiveCandidateVertexFinder.clusterizer.distanceRatio = 10
+process.inclusiveCandidateVertexFinder.clusterizer.seedMin3DIPSignificance = 1.0
+process.inclusiveCandidateVertexFinder.vertexMinDLen2DSig = 1.25
+process.inclusiveCandidateVertexFinder.vertexMinDLenSig = 0.25
+
 
 
 #for the flavour matching
@@ -128,8 +149,8 @@ process.combinedSVMVATrainer = cms.EDAnalyzer("JetTagMVAExtractor",
 
 	),
 	ipTagInfos = cms.InputTag("impactParameterTagInfos"),
-#	svTagInfos =cms.InputTag("secondaryVertexTagInfos"),
 	svTagInfos =cms.InputTag("inclusiveSecondaryVertexFinderTagInfos"),
+	#svTagInfos =cms.InputTag("pfInclusiveSecondaryVertexFinderCvsLTagInfos"),
 	muonTagInfos =cms.InputTag("softPFMuonsTagInfos"),
 	elecTagInfos =cms.InputTag("softPFElectronsTagInfos"),
 	
@@ -173,6 +194,7 @@ process.softPFMuonsTagInfos *
 process.softPFElectronsTagInfos *
 process.selectedHadronsAndPartons *
 process.jetFlavourInfosAK4PFJets *
+#process.customTagInfos *
 process.combinedSVMVATrainer 
 )
 
