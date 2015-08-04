@@ -4,7 +4,9 @@ import os
 if not os.path.isdir('trees'):
    os.path.makedirs('trees')
 
+process.MessageLogger.cerr.FwkReport.reportEvery = 100
 process.options.allowUnscheduled = cms.untracked.bool(True)
+process.options.wantSummary = False
 #process.Tracer = cms.Service("Tracer")
 
 ## load tau sequences up to selectedPatJets
@@ -29,6 +31,10 @@ process.source = cms.Source("PoolSource",
       '/store/relval/CMSSW_7_5_0_pre5/RelValTTbar_13/GEN-SIM-RECO/MCRUN2_75_V5-v1/00000/F0BEEE9E-120B-E511-88DD-0025905A60C6.root'
     )
 )
+
+#store debugging
+process.charmTagsComputerCvsL.debugFile = cms.string('trees/ctag_debug_CvsL.root')
+process.charmTagsComputerCvsB.debugFile = cms.string('trees/ctag_debug_CvsB.root')
 
 ## Output file
 process.out.outputCommands.append('keep *_goodOfflinePrimaryVertices_*_*')
