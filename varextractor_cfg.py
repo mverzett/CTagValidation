@@ -17,7 +17,7 @@ process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 process.load("Configuration.StandardSequences.Reconstruction_cff")
 
 process.options   = cms.untracked.PSet(
-    wantSummary = cms.untracked.bool(True)
+    wantSummary = cms.untracked.bool(False)
 )
 
 #process.GlobalTag.globaltag = cms.string("POSTLS170_V6::All")
@@ -63,15 +63,15 @@ process.softPFMuonsTagInfos.useMCpromptMuonFilter = cms.bool(True)
 #process.combinedSecondaryVertexSoftLepton.trackMultiplicityMin = cms.uint32(2)
 
 #load custom tag info
-#from RecoVertex.AdaptiveVertexFinder.inclusiveVertexing_cff import inclusiveCandidateVertexingCvsL
-#process.inclusiveCandidateVertexingCvsL = inclusiveCandidateVertexingCvsL
-#from RecoBTag.CTagging.pfInclusiveSecondaryVertexFinderCvsLTagInfos_cfi import pfInclusiveSecondaryVertexFinderCvsLTagInfos
-#process.pfInclusiveSecondaryVertexFinderCvsLTagInfos = pfInclusiveSecondaryVertexFinderCvsLTagInfos
-#process.customTagInfos = cms.Sequence(
-#    ( process.inclusiveCandidateVertexingCvsL *
-#      process.pfInclusiveSecondaryVertexFinderCvsLTagInfos
-#    )
-#)
+from RecoVertex.AdaptiveVertexFinder.inclusiveVertexing_cff import inclusiveCandidateVertexingCvsL
+process.inclusiveCandidateVertexingCvsL = inclusiveCandidateVertexingCvsL
+from RecoBTag.CTagging.pfInclusiveSecondaryVertexFinderCvsLTagInfos_cfi import pfInclusiveSecondaryVertexFinderCvsLTagInfos
+process.pfInclusiveSecondaryVertexFinderCvsLTagInfos = pfInclusiveSecondaryVertexFinderCvsLTagInfos
+process.customTagInfos = cms.Sequence(
+    ( process.inclusiveCandidateVertexingCvsL *
+      process.pfInclusiveSecondaryVertexFinderCvsLTagInfos
+    )
+)
 
 #for Inclusive Vertex Finder
 process.load('RecoVertex/AdaptiveVertexFinder/inclusiveVertexing_cff')
@@ -148,9 +148,13 @@ process.combinedSVMVATrainer = cms.EDAnalyzer("JetTagMVAExtractor",
 )) # no trackEtaRel!!!???!!!
 
 	),
-	ipTagInfos = cms.InputTag("impactParameterTagInfos"),
-	svTagInfos =cms.InputTag("inclusiveSecondaryVertexFinderTagInfos"),
-	#svTagInfos =cms.InputTag("pfInclusiveSecondaryVertexFinderCvsLTagInfos"),
+	#ipTagInfos = cms.InputTag("impactParameterTagInfos"),
+	#svTagInfos =cms.InputTag("inclusiveSecondaryVertexFinderTagInfos"),
+	#jetTagComputer = cms.string('combinedSecondaryVertexSoftLeptonComputer'),
+  jetTagComputer = cms.string('candidateCombinedSecondaryVertexSoftLeptonComputer'),
+  ipTagInfos = cms.InputTag("pfImpactParameterTagInfos"),
+	svTagInfos =cms.InputTag("pfInclusiveSecondaryVertexFinderCvsLTagInfos"),
+
 	muonTagInfos =cms.InputTag("softPFMuonsTagInfos"),
 	elecTagInfos =cms.InputTag("softPFElectronsTagInfos"),
 	
@@ -172,7 +176,6 @@ process.combinedSVMVATrainer = cms.EDAnalyzer("JetTagMVAExtractor",
 	maximumPseudoRapidity = cms.double(2.5),
 	signalFlavours = cms.vint32(5, 7),
 	minimumPseudoRapidity = cms.double(0.0),
-	jetTagComputer = cms.string('combinedSecondaryVertexSoftLeptonComputer'),
 	jetFlavourMatching = cms.InputTag("jetFlavourInfosAK4PFJets"),
 	matchedGenJets = cms.InputTag("matchedAK4PFGenJets"),
 	ignoreFlavours = cms.vint32(0)
@@ -194,7 +197,7 @@ process.softPFMuonsTagInfos *
 process.softPFElectronsTagInfos *
 process.selectedHadronsAndPartons *
 process.jetFlavourInfosAK4PFJets *
-#process.customTagInfos *
+process.customTagInfos *
 process.combinedSVMVATrainer 
 )
 
