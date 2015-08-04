@@ -7,3 +7,7 @@ training_trees
 *.root
 *.pdf
 *.png
+*.pyc
+*.db
+analyzed
+*.txt
