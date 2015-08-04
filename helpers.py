@@ -1,3 +1,4 @@
+import FWCore.ParameterSet.Config as cms
 
 def dict2tdir(hdict, tdir):
    for name, val in hdict.iteritems():
@@ -7,3 +8,4 @@ def dict2tdir(hdict, tdir):
       else:
          tdir.WriteTObject(val, name)
 
+   

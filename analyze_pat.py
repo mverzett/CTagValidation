@@ -128,9 +128,9 @@ for evt in events:
 
    jets = sjets
 
-   evt.getByLabel('goodOfflinePrimaryVertices', vtx_handle)
-   if not vtx_handle.product().size():
-      continue
+   ## evt.getByLabel('goodOfflinePrimaryVertices', vtx_handle)
+   ## if not vtx_handle.product().size():
+   ##    continue
 
    plots['njets'].fill(len(jets))
    for extjet in jets:

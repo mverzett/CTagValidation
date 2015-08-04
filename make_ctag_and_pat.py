@@ -45,7 +45,7 @@ process.goodOfflinePrimaryVertices = cms.EDFilter(
     "PrimaryVertexObjectFilter",
     filterParams = pvSelector.clone( minNdof = cms.double(4.0), maxZ = cms.double(24.0) ),
     src=cms.InputTag('offlinePrimaryVertices'),
-    filter=cms.bool(True)
+    filter=cms.bool(False)
     )
 
 #process.p = cms.Path(
