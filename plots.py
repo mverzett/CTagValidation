@@ -1,4 +1,6 @@
 from rootpy.plotting import Hist
+import os
+import pickle
 
 #yes, everything hardcoded
 plots = {
@@ -14,3 +16,9 @@ for name in ['CvsL', 'CvsB']:
    plots[name]['output_C'] = Hist(400, -2, 2)
    plots[name]['output_L'] = Hist(400, -2, 2)
    plots[name]['output_B'] = Hist(400, -2, 2)
+
+plots['trainingvars'] = {}
+with open('historanges.db') as infile:
+   ranges = pickle.load(infile)
+   for name, hrange in ranges.iteritems():
+      plots['trainingvars'][name] = Hist(200, *hrange)

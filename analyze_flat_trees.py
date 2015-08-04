@@ -86,6 +86,9 @@ for entry in flat_tree:
          plots[short]['output_B'].fill(bmva)
       else:
          plots[short]['output_L'].fill(bmva)
+   for vname in plots['trainingvars']:
+      if hasattr(entry, vname):
+         plots['trainingvars'][vname].fill(getattr(entry, vname))
 
 for j, i in njets.iteritems():
    if i > 20:

@@ -6,6 +6,7 @@ from rootpy.plotting.style import set_style
 import os
 import ROOT
 from pdb import set_trace
+from RecoBTag.CTagging.helpers import get_vars
 
 ROOT.gROOT.SetBatch(True)
 ROOT.gStyle.SetOptStat(0)
@@ -166,6 +167,16 @@ to_compare = [
    {'rbin' : 1, 'png' : 'jet_pt_zoom', 'path': 'pt_zoom', 'norm' : False, 'title' : 'jet p_{T}', 'xtitle' : 'jet p_{T}'},
    {'rbin' : 1, 'png' : 'njets'     , 'path' : 'njets'  , 'norm' : False, 'title' : '# jets', 'xtitle' : '# jets'},
 ]
+mva_vars = [i.name.value() for i in get_vars('%s/src/RecoBTag/CTagging/data/c_vs_udsg.weight.xml' % os.environ['CMSSW_BASE'])]
+for name in mva_vars:
+   to_compare.append(
+      {'rbin' : 4, 'png' : '%s' % name, 'path' : 'trainingvars/%s' % name, 'norm' : False, 'title' : '%s' % name, 'xtitle' : '%s' % name}
+      )
+## mva_vars = [i.name.value() for i in get_vars('%s/src/RecoBTag/CTagging/data/c_vs_b.weight.xml' % os.environ['CMSSW_BASE'])]
+## for name in mva_vars:
+##    to_compare.append(
+##       {'rbin' : 1, 'png' : 'name', 'path' : 'CvsB/%s' % name, 'norm' : False, 'title' : '%s' % name, 'xtitle' : '%s' % name}
+##       )
 
 for info in to_compare:
    canvas = plotting.Canvas(600, 800)
