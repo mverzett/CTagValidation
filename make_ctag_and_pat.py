@@ -6,7 +6,7 @@ if not os.path.isdir('trees'):
 
 process.MessageLogger.cerr.FwkReport.reportEvery = 100
 process.options.allowUnscheduled = cms.untracked.bool(True)
-process.options.wantSummary = False
+process.options.wantSummary = True
 #process.Tracer = cms.Service("Tracer")
 
 ## load tau sequences up to selectedPatJets
@@ -17,6 +17,9 @@ process.load('RecoBTag/Configuration/RecoBTag_cff')
 ## process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 ## from Configuration.AlCa.GlobalTag import GlobalTag
 ## process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc')
+
+process.softPFElectronsTagInfos.useMCpromptElectronFilter = cms.bool(True)
+process.softPFMuonsTagInfos.useMCpromptElectronFilter = cms.bool(True)
 
 ## Events to process
 process.maxEvents.input = 1000
