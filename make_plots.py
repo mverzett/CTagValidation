@@ -7,6 +7,7 @@ import os
 import ROOT
 from pdb import set_trace
 from RecoBTag.CTagging.helpers import get_vars
+from helpers import mkdir
 
 ROOT.gROOT.SetBatch(True)
 ROOT.gStyle.SetOptStat(0)
@@ -32,6 +33,7 @@ discrims = [
 inputs = {
    'pat' : io.root_open('analyzed/pat_validation_output.root'),
    'flat_tree' : io.root_open('analyzed/flat_tree_output.root'),
+   'varex_tree' : io.root_open('analyzed/varex_output.root'),
    }
 
 flavors = ['c', 'b', 'l', 'sum']
@@ -45,15 +47,15 @@ nice_names = {
 disc_shapes = {
  'pat' : dict((i, {}) for i in flavors),
  'flat_tree' : dict((i, {}) for i in flavors),
+ 'varex_tree' : dict((i, {}) for i in flavors),
 }
 
 colors = ['#ab5555', '#FFCC66', '#2aa198']
-if not os.path.isdir('plots'):
-   os.makedirs('plots')
+plotdir = 'plots_%s' % os.environ['tag']
+mkdir(plotdir)
 
 for prefix, infile in inputs.iteritems():
-   if not os.path.isdir('plots/%s' % prefix):
-      os.makedirs('plots/%s' % prefix)
+   mkdir('%s/%s' % (plotdir, prefix))
 
    for name in discrims:
       mva_out_view = views.StyleView(
@@ -99,8 +101,8 @@ for prefix, infile in inputs.iteritems():
       
       stack.Draw()
       legend.Draw()
-      canvas.SaveAs("plots/%s/%s_output.png" % (prefix, name))
-      canvas.SaveAs("plots/%s/%s_output.pdf" % (prefix, name))
+      canvas.SaveAs("%s/%s/%s_output.png" % (plotdir, prefix, name))
+      canvas.SaveAs("%s/%s/%s_output.pdf" % (plotdir, prefix, name))
       
       cshape = make_shape(cjets)
       bshape = make_shape(bjets)
@@ -118,8 +120,8 @@ for prefix, infile in inputs.iteritems():
       legend.AddEntry(lshape)
       legend.Draw()
 
-      canvas.SaveAs("plots/%s/%s_shape.png" % (prefix, name))
-      canvas.SaveAs("plots/%s/%s_shape.pdf" % (prefix, name))
+      canvas.SaveAs("%s/%s/%s_shape.png" % (plotdir, prefix, name))
+      canvas.SaveAs("%s/%s/%s_shape.pdf" % (plotdir, prefix, name))
 
       disc_shapes[prefix]['c'][name] = cshape
       disc_shapes[prefix]['b'][name] = bshape
@@ -131,27 +133,55 @@ for prefix, infile in inputs.iteritems():
       disc_shapes[prefix]['sum'][name].legendstyle = 'l'
 
 
-if not os.path.isdir('plots/comparison'):
-   os.makedirs('plots/comparison')
+mkdir('%s/comparison' % plotdir)
+train_var_out = {
+   -1 : '%s/comparison/single_value' % plotdir,
+    0 : '%s/comparison/vectorial/0th' % plotdir,
+    1 : '%s/comparison/vectorial/1st' % plotdir,
+    2 : '%s/comparison/vectorial/2nd' % plotdir,
+    3 : '%s/comparison/vectorial/3rd+' % plotdir
+}
+for i in train_var_out.values():
+   mkdir(i)
 
-inputs = {
-   'pat' : views.StyleView(
-      inputs['pat'], 
-      fillstyle = 'hollow',
-      linewidth = 2,
-      markerstyle= 0,
-      drawstyle='hist',
-      legendstyle='l'
+comparison_inputs = [
+   views.TitleView(
+      views.StyleView(
+         inputs['pat'], 
+         fillstyle = 'hollow',
+         linewidth = 2,
+         markerstyle= 0,
+         drawstyle='hist',
+         legendstyle='l',
+         linecolor = colors[0]
+         ),
+      'from PAT' 
       ),
-   'flat_tree' : views.StyleView(
-      inputs['flat_tree'], 
-      fillstyle = 'hollow',
-      linewidth = 2,
-      markerstyle= 0,
-      drawstyle='hist',
-      legendstyle='l'
+   views.TitleView(
+      views.StyleView(
+         inputs['flat_tree'], 
+         fillstyle = 'hollow',
+         linewidth = 2,
+         markerstyle= 0,
+         drawstyle='hist',
+         legendstyle='l',
+         linecolor = colors[1]
+         ),
+      'from flat tree'
+      ),
+   views.TitleView(
+      views.StyleView(
+         inputs['varex_tree'], 
+         fillstyle = 'hollow',
+         linewidth = 2,
+         markerstyle= 0,
+         drawstyle='hist',
+         legendstyle='l',
+         linecolor = colors[2]
+         ),
+      'from VarExtractor'
       )
-   }
+   ]
 
 to_compare = [
    {'rbin' : 8, 'png' : 'CvsL_MVA_B', 'path' : 'CvsL/output_B', 'norm' : False, 'title' : 'CvsL, B jets',     'xtitle' : 'MVA output'},
@@ -179,79 +209,75 @@ for name in mva_vars:
 ##       )
 
 for info in to_compare:
+   #infer output dir
+   plot_dir = '%s/comparison' % plotdir
+   if info['path'].startswith('trainingvars'):
+      if info['path'][-1].isdigit():
+         idx = int(info['path'].split('_')[-1])
+         plot_dir = train_var_out.get(idx, train_var_out[3])
+      else:
+         plot_dir = train_var_out[-1]
+
    canvas = plotting.Canvas(600, 800)
    pad1 = plotting.Pad(0,0.33,1,1)
    pad1.Draw()
    pad1.cd()
 
-   legend = plotting.Legend(2, rightmargin=0.07, topmargin=0.05, leftmargin=0.45)
+   legend = plotting.Legend(len(comparison_inputs), rightmargin=0.07, topmargin=0.05, leftmargin=0.45)
    legend.SetHeader(info['title'])
    legend.SetBorderSize(0)
    #print  flavor, name
    #set_trace()
 
-   pat  = inputs['pat'].Get(info['path'])
-   flat = inputs['flat_tree'].Get(info['path'])
+   histos = [i.Get(info['path']) for i in comparison_inputs]
 
-   pat.Rebin(info['rbin']) 
-   flat.Rebin(info['rbin']) 
-
-   pat.title = 'from PAT'
-   flat.title = 'from flat tree'
-   
-   pat.linecolor = colors[0]
-   flat.linecolor = colors[1]
-
-   pat.xaxis.title = info['xtitle']
-   flat.xaxis.title = info['xtitle']
-   
-   if info['norm']: 
-      pat.yaxis.title =  'Entries (normalized)'
-      flat.yaxis.title = 'Entries (normalized)'
-      pat.Scale(1./pat.Integral())
-      flat.Scale(1./flat.Integral())
-   else:
-      pat.yaxis.title =  'Entries'
-      flat.yaxis.title = 'Entries'
+   for h in histos:
+      h.Rebin(info['rbin']) 
+      h.xaxis.title = info['xtitle']   
+      if info['norm']: 
+         h.yaxis.title =  'Entries (normalized)'
+         h.Scale(1./pat.Integral())
+      else:
+         h.yaxis.title =  'Entries'
 
    #set range
    ymax = max(
-      max(i.value for i in pat),
-      max(i.value for i in flat)
+      max(i.value for i in h) for h in histos
       )
    ymin = min(
-      0.,
-      min(i.value for i in pat),
-      min(i.value for i in flat)
+      min(i.value for i in h) for h in histos
       )
-   pat.yaxis.range_user = (ymin, ymax*1.2)
+   ymin = min(ymin, 0.)
 
-   legend.AddEntry(pat)
-   legend.AddEntry(flat)
-   
-   pat.Draw()
-   flat.Draw('same')
+   first = True
+   for h in histos:
+      h.yaxis.range_user = (ymin, ymax*1.2)
+      legend.AddEntry(h)   
+      dopts = '' if first else 'same'
+      first = False
+      h.Draw(dopts)
    legend.Draw()
 
    canvas.cd()
    pad2 = plotting.Pad(0,0,1,0.33)
    pad2.Draw()
    pad2.cd()
-
-   ratio = pat.Clone()
-   ratio.Divide(flat)
-   ratio.drawstyle = 'p'
-   ratio.linecolor = 'black'      
-   ratio.yaxis.title = 'ratio (PAT/tree)'
-   ratio.yaxis.range_user = (0, 2)
-   ratio.Draw()
-
-   one = plotting.F1('1', *ratio.xaxis.range_user)
-   one.Draw('same')
-   one.linecolor = colors[0]
    
-   canvas.SaveAs('plots/comparison/%s.png' % info['png'])
-   canvas.SaveAs('plots/comparison/%s.pdf' % info['png'])
+   ratios = [i.Clone() for i in histos]
+   first = True
+   for ratio in ratios:
+      ratio.Divide(histos[0])
+      ratio.yaxis.title = 'ratio (/PAT)'
+      ratio.yaxis.range_user = (0.5, 1.5)
+      opts = '' if first else 'same'
+      ratio.Draw(opts)
+   
+   ## one = plotting.F1('1', *ratio.xaxis.range_user)
+   ## one.Draw('same')
+   ## one.linecolor = colors[0]
+   
+   canvas.SaveAs('%s/%s.png' % (plot_dir, info['png']))
+   canvas.SaveAs('%s/%s.pdf' % (plot_dir, info['png']))
 
 ##    to_keep = []
 ##    first = True
