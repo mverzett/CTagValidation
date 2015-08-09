@@ -29,19 +29,27 @@ end
 task :flattree => ['trees/CombinedSV_ALL.root'] do |t|
 end
 
-file 'historanges.db' => 'set_plot_ranges.py' do |t|
+file 'historanges.db' => ['set_plot_ranges.py', 'trees/CombinedSV_ALL.root', 'trees/validate_ctag_pat.root'] do |t|
   sh 'python set_plot_ranges.py'
 end
 
-file 'analyzed/flat_tree_output.root' => ['analyze_flat_trees.py', 'historanges.db', 'trees/CombinedSV_ALL.root'] do |t|
+file 'flat_jet_map' => ['make_jet_map.py', 'trees/CombinedSV_ALL.root', 'trees/validate_ctag_pat.root'] do |t|
+  sh 'python make_jet_map.py'
+end
+
+file 'analyzed/flat_tree_output.root' => ['analyze_flat_trees.py', 'flat_jet_map', 'historanges.db', 'trees/CombinedSV_ALL.root'] do |t|
   sh 'python analyze_flat_trees.py'
 end
 
-file 'analyzed/pat_validation_output.root' => ['analyzed/flat_tree_output.root', 'historanges.db', 'trees/validate_ctag_pat.root', 'analyze_pat.py'] do |t|
+file 'analyzed/pat_validation_output.root' => ['flat_jet_map', 'historanges.db', 'trees/validate_ctag_pat.root', 'analyze_pat.py'] do |t|
   sh 'python analyze_pat.py'
 end
 
-task :analyze => ['analyzed/pat_validation_output.root'] do |t|
+file 'analyzed/varex_output.root' => ['analyze_varex_trees.py', 'flat_jet_map', 'historanges.db', 'training_trees/CombinedSVRecoVertexSoftMuon_DUSG.root'] do |t|
+  sh 'python analyze_varex_trees.py'
+end
+
+task :analyze => ['analyzed/pat_validation_output.root', 'analyzed/flat_tree_output.root', 'analyzed/varex_output.root'] do |t|
 end
 
 task :plots => [] do |t|

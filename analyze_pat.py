@@ -9,58 +9,10 @@ from pdb import set_trace
 import os
 import pickle
 import rootpy
-from helpers import dict2tdir
-log = rootpy.log["/URUnfolding"]
+from helpers import dict2tdir, Struct, ExtJet
+log = rootpy.log["/analyze_pat"]
 log.setLevel(rootpy.log.INFO)
 from copy import deepcopy 
-
-class Struct:
-   def __init__(self, **entries): 
-       self.__dict__.update(entries)
-
-   def clone(self, **subs):
-       newd = deepcopy(self.__dict__)
-       newd.update(subs)
-       return Struct(**newd)
-
-   def __len__(self):
-       return len(self.__dict__)
-
-   def __contains__(self, val):
-       return val in self.__dict__
-
-   def __hash__(self):
-       return self.__dict__.__repr__().__hash__()
-
-   def __getitem__(self, name):
-     'x.__getitem__(i, y) <==> x[i]'
-     return self.__dict__[name]
-
-   def __setitem__(self, name, val):
-     'x.__setitem__(i, y) <==> x[i]=y'
-     self.__dict__[name] = val
-
-   def iteritems(self):
-       return self.__dict__.iteritems()
-
-   def keys(self):
-       return self.__dict__.keys()
-
-class ExtJet(object):
-   def __init__(self, patjet, l_entry, b_entry):
-      self.jet = patjet
-      assert(self.jet.pt() == l_entry.jetPt)
-      assert(self.jet.eta() == l_entry.jetEta)
-      self.CvsL = Struct(
-         **dict(
-            (i, deepcopy(getattr(l_entry, i))) for i in l_entry.iterkeys())
-           )
-
-      assert(self.jet.pt() == b_entry.jetPt)
-      assert(self.jet.eta() == b_entry.jetEta)
-      self.CvsB = Struct(
-         **dict((i, deepcopy(getattr(b_entry, i))) for i in b_entry.iterkeys())
-           )
 
 #yeah, everything is pretty much hadrcoded, but this is
 #supposed to be a quick check 
@@ -81,11 +33,17 @@ if not os.path.isdir('analyzed'):
 
 #book plots
 from plots import plots
+plots['CvsB']['mva_assert'] = Hist(2, 0, 2)
+plots['CvsL']['mva_assert'] = Hist(2, 0, 2)
 
 #import jets for flat trees
 jet_maps = {}
-with open('analyzed/flat_jet_map') as infile:
+with open('flat_jet_map') as infile:
    jet_maps = pickle.load(infile)
+
+mva_map = {}
+with open('analyzed/falt_tree_mva_jetmap.db') as infile:
+   mva_map = pickle.load(infile)
 
 handle = Handle('std::vector<pat::Jet>')
 vtx_handle = Handle('vector<reco::Vertex>')
@@ -140,6 +98,9 @@ for evt in events:
       plots['eta'].fill(jet.eta())
       for full, short in tested_discriminators.iteritems():
          bmva = jet.bDiscriminator(full)
+         plots[short]['mva_assert'].fill(
+            int(mva_map[evtid][(jet.pt(), jet.eta())][short] == bmva)
+            )
          plots[short]['output'].fill(bmva)
          flav = abs(jet.jetFlavourInfo().getPartonFlavour())
          if flav == 4:
