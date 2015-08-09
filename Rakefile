@@ -52,7 +52,14 @@ end
 task :analyze => ['analyzed/pat_validation_output.root', 'analyzed/flat_tree_output.root', 'analyzed/varex_output.root'] do |t|
 end
 
+task :jetbyjet => [] do |t|
+  sh 'python analyze_jetByjet.py'
+end
+
 task :plots => [] do |t|
   sh 'python make_plots.py'
 end
 
+task :diff => [] do |t|
+  sh 'python make_diff_plots.py'
+end

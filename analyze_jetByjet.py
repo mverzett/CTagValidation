@@ -56,7 +56,7 @@ for entry in flat_tree:
       continue
 
    if evtid not in flat_map: flat_map[evtid] = {}
-   flat_map[evtid][(entry.jetPt, entry.jetEta)] = entry
+   flat_map[evtid][(entry.jetPt, entry.jetEta)] = Struct.from_entry(entry)
 
 
 handle = Handle('std::vector<pat::Jet>')
@@ -105,7 +105,7 @@ for evt in events:
    #get flat jets
    flat_jets = flat_map[evtid]
 
-   plots['njets'].fill(len(jets) - len(flat_jets))
+   plots['njets'].fill(len(pat_jets) - len(flat_jets))
    for extjet in pat_jets:
       pat_jet = extjet.jet
       try:
@@ -116,7 +116,13 @@ for evt in events:
       taginfos = extjet.CvsL
       for vname in plots:
          if vname == 'njets': continue
-         plots[vname].fill(taginfos[vname] - getattr(flat_jet, vname))
+         fillval = taginfos[vname] - getattr(flat_jet, vname)
+         ## if vname == 'trackEtaRel_0' and fillval < -3:
+         ##    print evtid, 'jID', (pat_jet.pt(), pat_jet.eta())
+         ##    print 'flat: ', getattr(flat_jet, vname), 'pat:', taginfos[vname]
+         ##    set_trace()
+         plots[vname].fill(fillval)
+         
 
 print 'saving histograms'
 with io.root_open('analyzed/jet_by_jet_diff.root', 'recreate') as out:

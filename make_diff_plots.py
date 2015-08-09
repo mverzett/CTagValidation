@@ -46,11 +46,14 @@ for path in histos:
       plot_dir = train_var_out[-1]
 
    canvas = plotting.Canvas(800, 600)
+   canvas.set_logy(True)
    #print  flavor, name
    #set_trace()
 
    histo = inview.Get(path)
    histo.title = histo.name
+   m = max(i.value for i in histo)
+   histo.yaxis.range_user = (0.1, 3*m)
    histo.Draw()
    
    canvas.SaveAs('%s/%s.png' % (plot_dir, path))

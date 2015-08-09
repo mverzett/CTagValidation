@@ -78,6 +78,14 @@ class Struct:
 
    def keys(self):
        return self.__dict__.keys()
+   
+   @classmethod
+   def from_entry(cls, entry):
+      return cls(
+         **dict(
+            (i, deepcopy(getattr(entry, i))) for i in entry.iterkeys())
+           )
+      
 
 class ExtJet(object):
    def __init__(self, patjet, l_entry, b_entry):
