@@ -7,6 +7,7 @@ import os
 mva_vars_cl = set([i.name.value() for i in get_vars('%s/src/RecoBTag/CTagging/data/c_vs_udsg.weight.xml' % os.environ['CMSSW_BASE'])])
 mva_vars_cb = set([i.name.value() for i in get_vars('%s/src/RecoBTag/CTagging/data/c_vs_b.weight.xml' % os.environ['CMSSW_BASE'])])
 mva_vars_cl.update(mva_vars_cb)
+mva_vars_cl.add('vertexCategory')
 #automatic set mins and maxes
 mms_vars = dict((i, (float('inf'), float('-inf'))) for i in mva_vars_cl)
 
