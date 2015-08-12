@@ -196,6 +196,7 @@ to_compare = [
    {'rbin' : 4, 'png' : 'jet_eta'   , 'path' : 'eta'     , 'norm' : False, 'title' : 'jet #eta',        'xtitle' : 'jet #eta'},
    {'rbin' : 1, 'png' : 'jet_pt_zoom', 'path': 'pt_zoom', 'norm' : False, 'title' : 'jet p_{T}', 'xtitle' : 'jet p_{T}'},
    {'rbin' : 1, 'png' : 'njets'     , 'path' : 'njets'  , 'norm' : False, 'title' : '# jets', 'xtitle' : '# jets'},
+   {'rbin' : 1, 'png' : 'vertexCategory' , 'path' : 'trainingvars/vertexCategory'  , 'norm' : False, 'title' : 'vertexCategory', 'xtitle' : 'vertexCategory', 'xrange' : (0, 10)},
 ]
 mva_vars = [i.name.value() for i in get_vars('%s/src/RecoBTag/CTagging/data/c_vs_udsg.weight.xml' % os.environ['CMSSW_BASE'])]
 for name in mva_vars:
@@ -234,6 +235,8 @@ for info in to_compare:
    for h in histos:
       h.Rebin(info['rbin']) 
       h.xaxis.title = info['xtitle']   
+      if 'xrange' in info:
+         h.xaxis.range_user = info['xrange']
       if info['norm']: 
          h.yaxis.title =  'Entries (normalized)'
          h.Scale(1./pat.Integral())
@@ -270,6 +273,7 @@ for info in to_compare:
       ratio.yaxis.title = 'ratio (/PAT)'
       ratio.yaxis.range_user = (0.5, 1.5)
       opts = '' if first else 'same'
+      first = False
       ratio.Draw(opts)
    
    ## one = plotting.F1('1', *ratio.xaxis.range_user)
