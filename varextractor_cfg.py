@@ -19,6 +19,9 @@ process.load("Configuration.StandardSequences.Reconstruction_cff")
 process.options   = cms.untracked.PSet(
     wantSummary = cms.untracked.bool(False)
 )
+process.maxEvents = cms.untracked.PSet(
+    input = cms.untracked.int32(1000)
+)
 
 #process.GlobalTag.globaltag = cms.string("POSTLS170_V6::All")
 process.GlobalTag.globaltag = cms.string("MCRUN2_75_V5")
@@ -103,16 +106,10 @@ from PhysicsTools.JetMCAlgos.AK4PFJetsMCFlavourInfos_cfi import ak4JetFlavourInf
 process.jetFlavourInfosAK4PFJets = ak4JetFlavourInfos.clone()
 process.jetFlavourInfosAK4PFJets.jets = cms.InputTag("ak4PFJetsCHS")
 
-process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(1000)
-)
-
 
 process.source = cms.Source("PoolSource",
 	fileNames = cms.untracked.vstring(
-      '/store/relval/CMSSW_7_5_0_pre5/RelValTTbar_13/GEN-SIM-RECO/MCRUN2_75_V5-v1/00000/383E39B7-BA0B-E511-A509-0025905B8582.root',
-      '/store/relval/CMSSW_7_5_0_pre5/RelValTTbar_13/GEN-SIM-RECO/MCRUN2_75_V5-v1/00000/4AE0AEB0-BA0B-E511-86F9-002618943857.root',
-      '/store/relval/CMSSW_7_5_0_pre5/RelValTTbar_13/GEN-SIM-RECO/MCRUN2_75_V5-v1/00000/F0BEEE9E-120B-E511-88DD-0025905A60C6.root'
+      'file:~/nobackup/RelValTTbar_13_sample.root',
 	)
 )
 
@@ -148,15 +145,15 @@ process.combinedSVMVATrainer = cms.EDAnalyzer("JetTagMVAExtractor",
 )) # no trackEtaRel!!!???!!!
 
 	),
-	#ipTagInfos = cms.InputTag("impactParameterTagInfos"),
-	#svTagInfos =cms.InputTag("inclusiveSecondaryVertexFinderTagInfos"),
-	#jetTagComputer = cms.string('combinedSecondaryVertexSoftLeptonComputer'),
+	## ipTagInfos = cms.InputTag("impactParameterTagInfos"),
+	## svTagInfos =cms.InputTag("inclusiveSecondaryVertexFinderTagInfos"),
+	## jetTagComputer = cms.string('combinedSecondaryVertexSoftLeptonComputer'),
   jetTagComputer = cms.string('candidateCombinedSecondaryVertexSoftLeptonComputer'),
   ipTagInfos = cms.InputTag("pfImpactParameterTagInfos"),
 	svTagInfos =cms.InputTag("pfInclusiveSecondaryVertexFinderCvsLTagInfos"),
 
-	muonTagInfos =cms.InputTag("softPFMuonsTagInfos"),
-	elecTagInfos =cms.InputTag("softPFElectronsTagInfos"),
+	muonTagInfos =cms.InputTag("softPFMuonsTagInfos", '', 'CSVTrainer'),
+	elecTagInfos =cms.InputTag("softPFElectronsTagInfos", '', 'CSVTrainer'),
 	
 	
 	minimumTransverseMomentum = cms.double(15.0),

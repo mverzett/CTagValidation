@@ -22,22 +22,34 @@ process.softPFElectronsTagInfos.useMCpromptElectronFilter = cms.bool(True)
 process.softPFMuonsTagInfos.useMCpromptElectronFilter = cms.bool(True)
 
 ## Events to process
-process.maxEvents.input = 1000
+process.maxEvents.input = 1000 #1000
 process.out.fileName = 'trees/validate_ctag_pat.root'
 
 process.patJetCorrFactors.levels = []
 ## Input files
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
-      '/store/relval/CMSSW_7_5_0_pre5/RelValTTbar_13/GEN-SIM-RECO/MCRUN2_75_V5-v1/00000/383E39B7-BA0B-E511-A509-0025905B8582.root',
-      '/store/relval/CMSSW_7_5_0_pre5/RelValTTbar_13/GEN-SIM-RECO/MCRUN2_75_V5-v1/00000/4AE0AEB0-BA0B-E511-86F9-002618943857.root',
-      '/store/relval/CMSSW_7_5_0_pre5/RelValTTbar_13/GEN-SIM-RECO/MCRUN2_75_V5-v1/00000/F0BEEE9E-120B-E511-88DD-0025905A60C6.root'
+      'file:~/nobackup/RelValTTbar_13_sample.root',
     )
 )
 
 #store debugging
 process.charmTagsComputerCvsL.debugFile = cms.string('trees/ctag_debug_CvsL.root')
 process.charmTagsComputerCvsB.debugFile = cms.string('trees/ctag_debug_CvsB.root')
+process.charmTagsComputerCvsL.tagInfos = cms.VInputTag(
+   cms.InputTag("pfImpactParameterTagInfos"), 
+   cms.InputTag("pfInclusiveSecondaryVertexFinderCtagLTagInfos"), 
+   cms.InputTag("softPFMuonsTagInfos"    , '', 'PAT'), 
+   cms.InputTag("softPFElectronsTagInfos", '', 'PAT')
+   )
+process.charmTagsComputerCvsB.tagInfos = cms.VInputTag(
+   cms.InputTag("pfImpactParameterTagInfos"), 
+   cms.InputTag("pfInclusiveSecondaryVertexFinderCtagLTagInfos"), 
+   cms.InputTag("softPFMuonsTagInfos"    , '', 'PAT'), 
+   cms.InputTag("softPFElectronsTagInfos", '', 'PAT')
+   )
+
+
 
 ## Output file
 process.out.outputCommands.append('keep *_goodOfflinePrimaryVertices_*_*')
