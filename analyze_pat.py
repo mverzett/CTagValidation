@@ -41,9 +41,9 @@ jet_maps = {}
 with open('flat_jet_map') as infile:
    jet_maps = pickle.load(infile)
 
-mva_map = {}
-with open('analyzed/falt_tree_mva_jetmap.db') as infile:
-   mva_map = pickle.load(infile)
+## mva_map = {}
+## with open('analyzed/falt_tree_mva_jetmap.db') as infile:
+##    mva_map = pickle.load(infile)
 
 handle = Handle('std::vector<pat::Jet>')
 vtx_handle = Handle('vector<reco::Vertex>')
@@ -99,7 +99,8 @@ for evt in events:
       for full, short in tested_discriminators.iteritems():
          bmva = jet.bDiscriminator(full)
          plots[short]['mva_assert'].fill(
-            int(mva_map[evtid][(jet.pt(), jet.eta())][short] == bmva)
+            0.
+            ## int(mva_map[evtid][(jet.pt(), jet.eta())][short] == bmva)
             )
          plots[short]['output'].fill(bmva)
          flav = abs(jet.jetFlavourInfo().getPartonFlavour())

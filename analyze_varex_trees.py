@@ -42,12 +42,27 @@ with open('flat_jet_map') as infile:
    jet_maps = pickle.load(infile)
 
 infile_names = glob('training_trees/CombinedSV*.root')
+vtx_categories = {
+   'CombinedSVNoVertexNoSoftLepton' : 2,
+   'CombinedSVPseudoVertexNoSoftLepton' : 1,
+   'CombinedSVRecoVertexNoSoftLepton' : 0,
+
+   'CombinedSVNoVertexSoftElectron' : 8,
+   'CombinedSVPseudoVertexSoftElectron' : 7,
+   'CombinedSVRecoVertexSoftElectron' : 6,
+
+   'CombinedSVNoVertexSoftMuon' : 5,
+   'CombinedSVPseudoVertexSoftMuon' : 4,
+   'CombinedSVRecoVertexSoftMuon' : 3,
+}
 for fname in infile_names:
    infile = io.root_open(fname)
    tname = os.path.basename(fname).split('_')[0]
    ttree = infile.Get(tname)
+   #vertexCategory = vtx_categories[tname]
    flavor = os.path.basename(fname).split('_')[1].replace('.root','')
    for entry in ttree:
+      #set_trace()
       evtid = (entry.run, entry.lumi, entry.evt)
       if (entry.jetPt, entry.jetEta) not in jet_maps[evtid]:
          continue
@@ -62,7 +77,7 @@ for fname in infile_names:
       plots['eta'].fill(entry.jetEta)
 
       mva_input = Struct()
-      for vname in plots['trainingvars']:
+      for vname in mva_vars_info: 
          info = mva_vars_info[vname]
          var = info['default']
          if hasattr(entry, info['entry_name']):
@@ -75,6 +90,7 @@ for fname in infile_names:
          plots['trainingvars'][vname].fill(var)
          setattr(mva_input, vname, var)
 
+      plots['trainingvars']['vertexCategory'].fill(entry.vertexCategory)
       for short, evaluator in mva.iteritems():
          bmva = evaluator(mva_input)
          plots[short]['output'].fill(bmva)
