@@ -21,4 +21,6 @@ plots['trainingvars'] = {}
 with open('historanges.db') as infile:
    ranges = pickle.load(infile)
    for name, hrange in ranges.iteritems():
+      if hrange[0] == hrange[1]:
+         hrange = -1, 1
       plots['trainingvars'][name] = Hist(200, *hrange)
