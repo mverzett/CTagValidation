@@ -3,7 +3,7 @@ import FWCore.ParameterSet.Config as cms
 process = cms.Process("CSVTrainer")
 
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
-process.MessageLogger.cerr.FwkReport.reportEvery = 100
+process.MessageLogger.cerr.FwkReport.reportEvery = 1
 
 process.load("RecoBTau.JetTagComputer.jetTagRecord_cfi")
 #process.load("RecoBTag.SecondaryVertex.combinedSecondaryVertexES_cfi")
@@ -54,11 +54,11 @@ process.goodOfflinePrimaryVertices = cms.EDFilter(
     )
 
 #input for softLeptonTagInfos
-from RecoBTag.SoftLepton.softPFElectronTagInfos_cfi import *
+process.load('RecoBTag.SoftLepton.softPFElectronTagInfos_cfi')# import *
 process.softPFElectronsTagInfos.primaryVertex = 'offlinePrimaryVertices' #cms.InputTag('goodOfflinePrimaryVertices')
 process.softPFElectronsTagInfos.jets = cms.InputTag("ak4PFJetsCHS")
 process.softPFElectronsTagInfos.useMCpromptElectronFilter = cms.bool(True)
-from RecoBTag.SoftLepton.softPFMuonTagInfos_cfi import *
+process.load('RecoBTag.SoftLepton.softPFMuonTagInfos_cfi')# import *
 process.softPFMuonsTagInfos.primaryVertex = 'offlinePrimaryVertices' #cms.InputTag('goodOfflinePrimaryVertices')
 process.softPFMuonsTagInfos.jets = cms.InputTag("ak4PFJetsCHS")
 process.softPFMuonsTagInfos.useMCpromptMuonFilter = cms.bool(True)
@@ -107,10 +107,16 @@ process.jetFlavourInfosAK4PFJets = ak4JetFlavourInfos.clone()
 process.jetFlavourInfosAK4PFJets.jets = cms.InputTag("ak4PFJetsCHS")
 
 
-process.source = cms.Source("PoolSource",
-	fileNames = cms.untracked.vstring(
-      'file:~/nobackup/RelValTTbar_13_sample.root',
-	)
+process.source = cms.Source(
+   "PoolSource",
+   fileNames = cms.untracked.vstring(
+      'file:/uscms_data/d3/verzetti/RelValTTbar_13_sample.root',
+      ),
+   ## eventsToProcess = cms.untracked.VEventRange([
+   ##       '1:33:3209',
+   ##       '1:33:3294',
+   ##       '1:36:3512'
+   ##       ])
 )
 
 
