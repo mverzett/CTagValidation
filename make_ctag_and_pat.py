@@ -4,14 +4,21 @@ import os
 if not os.path.isdir('trees'):
    os.path.makedirs('trees')
 
-process.MessageLogger.cerr.FwkReport.reportEvery = 100
-process.options.allowUnscheduled = cms.untracked.bool(True)
+
+process.MessageLogger.cerr.FwkReport.reportEvery = 1
+process.options.allowUnscheduled = cms.untracked.bool(False)
 process.options.wantSummary = True
 #process.Tracer = cms.Service("Tracer")
 
 ## load tau sequences up to selectedPatJets
 process.load("PhysicsTools.PatAlgos.producersLayer1.jetProducer_cff")
 process.load("PhysicsTools.PatAlgos.selectionLayer1.jetSelector_cfi")
+##Run only cTag
+process.patJets.addBTagInfo = True
+process.patJets.discriminatorSources = cms.VInputTag(
+   cms.InputTag("pfCombinedCvsLJetTags", '', 'PAT'), 
+   cms.InputTag("pfCombinedCvsBJetTags", '', 'PAT'))
+
 
 process.load('RecoBTag/Configuration/RecoBTag_cff')
 ## process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
@@ -19,7 +26,7 @@ process.load('RecoBTag/Configuration/RecoBTag_cff')
 ## process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc')
 
 process.softPFElectronsTagInfos.useMCpromptElectronFilter = cms.bool(True)
-process.softPFMuonsTagInfos.useMCpromptElectronFilter = cms.bool(True)
+process.softPFMuonsTagInfos.useMCpromptMuonFilter = cms.bool(True)
 
 ## Events to process
 process.maxEvents.input = 1000 #1000
@@ -27,10 +34,16 @@ process.out.fileName = 'trees/validate_ctag_pat.root'
 
 process.patJetCorrFactors.levels = []
 ## Input files
-process.source = cms.Source("PoolSource",
-    fileNames = cms.untracked.vstring(
-      'file:~/nobackup/RelValTTbar_13_sample.root',
-    )
+process.source = cms.Source(
+   "PoolSource",
+   fileNames = cms.untracked.vstring(
+      'file:/uscms_data/d3/verzetti/RelValTTbar_13_sample.root',
+      ),
+##    eventsToProcess = cms.untracked.VEventRange([
+##          '1:33:3209',
+##          '1:33:3294',
+##          '1:36:3512'
+##          ])
 )
 
 #store debugging
@@ -38,17 +51,30 @@ process.charmTagsComputerCvsL.debugFile = cms.string('trees/ctag_debug_CvsL.root
 process.charmTagsComputerCvsB.debugFile = cms.string('trees/ctag_debug_CvsB.root')
 process.charmTagsComputerCvsL.tagInfos = cms.VInputTag(
    cms.InputTag("pfImpactParameterTagInfos"), 
-   cms.InputTag("pfInclusiveSecondaryVertexFinderCtagLTagInfos"), 
+   cms.InputTag("pfInclusiveSecondaryVertexFinderCtagLTagInfos", '', 'PAT'), 
    cms.InputTag("softPFMuonsTagInfos"    , '', 'PAT'), 
    cms.InputTag("softPFElectronsTagInfos", '', 'PAT')
    )
 process.charmTagsComputerCvsB.tagInfos = cms.VInputTag(
    cms.InputTag("pfImpactParameterTagInfos"), 
-   cms.InputTag("pfInclusiveSecondaryVertexFinderCtagLTagInfos"), 
+   cms.InputTag("pfInclusiveSecondaryVertexFinderCtagLTagInfos", '', 'PAT'), 
    cms.InputTag("softPFMuonsTagInfos"    , '', 'PAT'), 
    cms.InputTag("softPFElectronsTagInfos", '', 'PAT')
    )
 
+process.pfCombinedCvsLJetTags.tagInfos = cms.VInputTag(
+   cms.InputTag("pfImpactParameterTagInfos"                   ), 
+   cms.InputTag("pfInclusiveSecondaryVertexFinderCvsLTagInfos", '', 'PAT'), 
+   cms.InputTag("softPFMuonsTagInfos"                         , '', 'PAT'), 
+   cms.InputTag("softPFElectronsTagInfos"                     , '', 'PAT')
+   )
+
+process.pfCombinedCvsBJetTags.tagInfos = cms.VInputTag(
+   cms.InputTag("pfImpactParameterTagInfos"                   ), 
+   cms.InputTag("pfInclusiveSecondaryVertexFinderCvsLTagInfos", '', 'PAT'), 
+   cms.InputTag("softPFMuonsTagInfos"                         , '', 'PAT'), 
+   cms.InputTag("softPFElectronsTagInfos"                     , '', 'PAT')
+   )
 
 
 ## Output file
@@ -63,7 +89,11 @@ process.goodOfflinePrimaryVertices = cms.EDFilter(
     filter=cms.bool(False)
     )
 
-#process.p = cms.Path(
-#    process.pfCTagging
-#)
+process.p = cms.Path(
+   process.softPFMuonsTagInfos *
+   process.softPFElectronsTagInfos *
+   process.pfCTagging *
+   process.makePatJets *
+   process.selectedPatJets
+)
 
