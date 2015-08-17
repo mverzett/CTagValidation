@@ -92,14 +92,8 @@ class ExtJet(object):
       self.jet = patjet
       assert(self.jet.pt() == l_entry.jetPt)
       assert(self.jet.eta() == l_entry.jetEta)
-      self.CvsL = Struct(
-         **dict(
-            (i, deepcopy(getattr(l_entry, i))) for i in l_entry.iterkeys())
-           )
-
+      self.CvsL = Struct.from_entry(l_entry)
       assert(self.jet.pt() == b_entry.jetPt)
       assert(self.jet.eta() == b_entry.jetEta)
-      self.CvsB = Struct(
-         **dict((i, deepcopy(getattr(b_entry, i))) for i in b_entry.iterkeys())
-           )
+      self.CvsB = Struct.from_entry(b_entry)
    
