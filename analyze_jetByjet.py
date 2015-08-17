@@ -76,6 +76,8 @@ flat_tree = inputFile.tree
 
 for entry in flat_tree:
    evtid = (entry.run, entry.lumi, entry.evt)
+   if evtid not in jet_maps:
+      continue
    if (entry.jetPt, entry.jetEta) not in jet_maps[evtid]:
       continue
 
@@ -130,6 +132,8 @@ for evt in events:
       continue
 
    #get flat jets
+   if evtid not in flat_map:
+      continue
    flat_jets = flat_map[evtid]
 
    diffjet_entry = set()
@@ -154,7 +158,7 @@ for evt in events:
             same_rate[vname] += 1
          else:
             if abs(fillval/taginfos[vname]) > 1:
-               print 'BIG', vname, taginfos[vname], getattr(flat_jet, vname)
+               print 'BIG', evtid, (pat_jet.pt(), pat_jet.eta()), vname, taginfos[vname], getattr(flat_jet, vname)
             else:
                print 'SMALL',vname, taginfos[vname], getattr(flat_jet, vname) #set_trace()
             if is_defaulted(vname, taginfos[vname]) or is_defaulted(vname, getattr(flat_jet, vname)):

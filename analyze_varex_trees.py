@@ -64,6 +64,8 @@ for fname in infile_names:
    for entry in ttree:
       #set_trace()
       evtid = (entry.run, entry.lumi, entry.evt)
+      if evtid not in jet_maps:
+         continue
       if (entry.jetPt, entry.jetEta) not in jet_maps[evtid]:
          continue
 

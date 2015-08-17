@@ -40,6 +40,8 @@ with open('flat_jet_map') as infile:
 mva_jetmap = {}
 for entry in flat_tree:
    evtid = (entry.run, entry.lumi, entry.evt)
+   if evtid not in jet_maps:
+      continue
    if (entry.jetPt, entry.jetEta) not in jet_maps[evtid]:
       continue
 
